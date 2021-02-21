@@ -53,12 +53,22 @@ font = ImageFont.load_default()
 # font = ImageFont.truetype('/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf', 9)
 
 import os
+import time
+import datetime
 clear = lambda: os.system('clear')
 
-while True:
+tick = 0
+startTime = int(time.time())
+slide = 0
+maxSlide = 1
 
-    # Draw a black filled box to clear the image.
-    draw.rectangle((0, 0, width, height), outline=0, fill=0)
+def log(message):
+    ts = time.time()
+    st = datetime.datetime.fromtimestamp(ts).strftime('%Y-%m-%d %H:%M:%S')
+    print("[" + st + "] " + message)
+
+while True:
+    tick = (tick + 1)
 
     # Shell scripts for system monitoring from here : https://unix.stackexchange.com/questions/119126/command-to-display-memory-usage-disk-usage-and-cpu-load
     cmd = "hostname"
@@ -70,23 +80,51 @@ while True:
     CPU_TEMPERATURE = subprocess.check_output(cmd, shell = True)
     temperature = re.search('temp=(\d+)', CPU_TEMPERATURE.decode('UTF-8')).group(1)
 
-    cmd = "kubectl describe node " + HOSTNAME.decode("utf-8")
-    K8_NODE = subprocess.check_output(cmd, shell = True)
+    hostname = HOSTNAME.decode('UTF-8').strip()
+    ipAddress = IP.decode('UTF-8').strip()
+    changeSlide = int(tick % 5) #If the number is divisible by 5 then it will be 0
 
-    pods = re.search('(\d) in ', K8_NODE.decode('UTF-8')).group(1)
-
-    print("Pods: " + pods)
+    if (changeSlide == 0):
+        if (slide < maxSlide):
+            slide = (slide + 1)
+        else:
+            slide = 0
 
     # Examples of getting system information from psutil : https://www.thepythoncode.com/article/get-hardware-system-information-python#CPU_info
     CPU = "{:3.0f}".format(psutil.cpu_percent())
     svmem = psutil.virtual_memory()
     MemUsage = "{:2.0f}".format(svmem.percent)
 
-    draw.text((x, top),       "NAME: " + HOSTNAME.decode('UTF-8'), font=font, fill=255)
-    draw.text((x, top+12),    "IP  : " + IP.decode('UTF-8'),  font=font, fill=255)
-    #draw.text((x, top+24),    "CPU : " + CPU + "% | MEM: " + MemUsage + "%", font=font, fill=255)
-    draw.text((x, top+24),    "PODS : " + pods + " | TEMP: " + temperature + "c", font=font, fill=255)
+    draw.rectangle((0, 0, width, height), outline=0, fill=0)
+    if (slide == 0):
+        try:
+            cmd = "kubectl describe node " + HOSTNAME.decode("utf-8")
+            K8_NODE = subprocess.check_output(cmd, shell = True)
+        except subprocess.CalledProcessError as e:
+            print(e)
 
+        pods = re.search('(\d) in ', K8_NODE.decode('UTF-8')).group(1)
+        
+        draw.text((x, top),       "NAME: " + hostname, font=font, fill=255)
+        draw.text((x, top+12),    "IP  : " + ipAddress,  font=font, fill=255)
+        draw.text((x, top+24),    "PODS : " + pods + " | TEMP: " + temperature + "c", font=font, fill=255)
+    elif (slide == 1):             
+        draw.text((x, top),       "NAME: " + hostname, font=font, fill=255)
+        draw.text((x, top+12),    "IP  : " + ipAddress,  font=font, fill=255)
+        draw.text((x, top+24),    "CPU : " + CPU + "% | MEM: " + MemUsage + "%", font=font, fill=255)
+
+    log("----------")
+    log("Script start time: " + str(startTime))
+    log("Time: " + str(int(time.time())))
+    log("Tick: " + str(tick))
+    log("Change slide: " + str(changeSlide))
+    log("Slide: " + str(slide))
+    log("Hostname: " + hostname)
+    log("CPU Temperature: " + temperature + "c")
+    log("Pods: " + pods)
+
+
+    
     disp.image(image)
     disp.show()
     #clear()
