@@ -1,0 +1,11 @@
+[Unit]
+Description=Screen service for monitoring the Pi
+After=multi-user.target
+
+[Service]
+Type=idle
+User=root
+ExecStart=/usr/bin/python3 /root/k3s-screen/init.py > /var/log/screen.log 2>1&
+
+[Install]
+WantedBy=multi-user.target
