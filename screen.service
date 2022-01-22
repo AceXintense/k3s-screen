@@ -3,9 +3,12 @@ Description=Screen service for monitoring the Pi
 After=multi-user.target
 
 [Service]
-Type=idle
+Type=simple
 User=root
 ExecStart=/usr/bin/python3 /root/k3s-screen/init.py > /var/log/screen.log 2>1&
+Restart=on-failure
+RestartSec=10
+KillMode=process
 
 [Install]
 WantedBy=multi-user.target
