@@ -4,12 +4,8 @@ if [ "$EUID" -ne 0 ]
 fi
 
 echo "Installing required dependencies"
-apt-get install python3-pip
-pip3 install adafruit-circuitpython-ssd1306
-apt-get install python3-pil
-apt-get install -y python-smbus
-apt-get install -y i2c-tools
-pip3 install psutil
+apt install python3-pip python3-pil python-ssd1306 python-smbus i2c-tools -y
+pip3 install adafruit-circuit bottle glances psutil
 
 echo "Enabling I2C and SPI"
 raspi-config nonint do_i2c 0
