@@ -1,6 +1,6 @@
 import requests
 
-url = 'http://192.168.1.126:61208/api/3'
+url = 'http://localhost:61208/api/3'
 
 def get_cpu(element):
     return requests.get(url + '/cpu').json()[element]
